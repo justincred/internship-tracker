@@ -1,0 +1,73 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+model Internship {
+  id             Int      @id @default(autoincrement())
+  companyId      Int
+  company        Company  @relation(fields: [companyId], references: [id])
+  companyName    String    // Added from PostgreSQL
+  companyWebsite String?   // Added from PostgreSQL
+  position       String
+  description    String?
+  status         Status
+  appliedDate    DateTime?  @db.Date
+  deadline       DateTime?
+  isInterviewing Boolean  @default(false)
+  salary         Decimal? @db.Decimal(10, 2)
+  location       String?
+  notes          String?
+  userId         Int
+  user           User     @relation(fields: [userId], references: [id])
+  isFavourite    Boolean   @default(false) // Added from PostgreSQL
+  interviews     Interview[]
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+model Interview {
+  id            Int       @id @default(autoincrement())
+  internship    Internship @relation(fields: [internshipId], references: [id])
+  internshipId  Int
+  date          DateTime  @db.Date
+  interviewer   String
+  stage         Int
+  notes         String?
+}
+model Company {
+  id          Int         @id @default(autoincrement())
+  name        String      @unique
+  website     String?
+  industry    String?
+  internships Internship[]
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+}
+
+model User {
+  id         Int         @id @default(autoincrement())
+  email      String      @unique
+  name       String?
+  internships Internship[]
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+}
+
+enum Status {
+  YetToApply
+  APPLIED
+  INTERVIEWING
+  OFFERED
+  ACCEPTED
+  REJECTED
+  REFUSED
+}
